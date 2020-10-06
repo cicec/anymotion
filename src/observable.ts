@@ -19,16 +19,16 @@ class Subscriber<T> {
     this.observer = observer
   }
 
-  update(value: T) {
+  update = (value: T) => {
     if (this.observer.update) this.observer.update(value)
   }
 
-  complete() {
+  complete = () => {
     if (this.observer.complete && this.isActive) this.observer.complete()
     this.isActive = false
   }
 
-  error(err: any) {
+  error = (err: any) => {
     if (this.observer.error && this.isActive) this.observer.error(err)
     this.isActive = false
   }
