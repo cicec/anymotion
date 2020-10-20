@@ -9,3 +9,11 @@ export type UpdateObserver<T> = PartialObserver<T> & { update: (value: T) => voi
 export type Unsubscribe = (() => void) | void
 export type Subscribe<T> = (subscriber: Subscriber<T>) => Unsubscribe | void
 export type Operation<T, R> = (source: Observable<T>) => Observable<R>
+
+export type SpringConfig = {
+  tension?: number
+  friction?: number
+  mass?: number
+  precision?: number
+}
+export type MotionConfig = SpringConfig

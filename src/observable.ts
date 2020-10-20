@@ -58,9 +58,7 @@ export class Observable<T> {
     return new Subscription({ unsubscribe })
   }
 
-  pipe(...operations: Operation<any, any>[]): Observable<any> {
-    if (operations.length === 0) return this
-
+  pipe<R = T>(...operations: Operation<any, any>[]): Observable<R> {
     return operations.reduce<Observable<any>>((prev, operation) => operation(prev), this)
   }
 }

@@ -1,52 +1,35 @@
+import { factory } from './factory'
+import { frame } from './frame'
 import { observable } from './observable'
+import { SpringConfig } from './types'
 
-type Config = {
-  tension?: number
-  friction?: number
-  mass?: number
-  precision: number
-  velocity: number
-}
-type Options = { to?: number; from?: number; config?: Config }
+const defaultConfig = { tension: 170, friction: 26, mass: 1, precision: 0.01 }
 
-const defaultConfig = { tension: 170, friction: 26, mass: 1, precision: 0.01, velocity: 0 }
-const defaultOptions = { to: 0, from: 0, config: defaultConfig }
-
-const spring = (options?: Options) =>
-  observable<number>(subscriber => {
-    const { to, from, config } = { ...defaultOptions, ...options }
+export const spring = factory((config?: SpringConfig) =>
+  observable<number>(({ update, complete }) => {
     const { tension, friction, mass, precision } = { ...defaultConfig, ...config }
 
-    let { velocity } = { ...defaultConfig, ...config }
-    let position = from
-    let time = performance.now()
-    let animationId = 0
+    let velocity = 0
+    let progress = 0
 
-    const update = () => {
-      const pt = time
-      time = performance.now()
-      const dt = (time - pt) / 1000
-
-      const force = tension * (to - position)
+    return frame(({ delta, cancelFrame }) => {
+      const dt = delta / 1000
+      const force = tension * (1 - progress)
       const damping = -friction * velocity
 
       velocity += ((force + damping) / mass) * dt
-      position += velocity * dt
+      progress += velocity * dt
 
-      if (Math.abs(to - position) < precision && Math.abs(velocity) < precision) {
-        position = to
+      if (Math.abs(1 - progress) < precision && Math.abs(velocity) < precision / 10) {
+        progress = 1
         velocity = 0
-        subscriber.update(position)
-        subscriber.complete()
+
+        update(progress)
+        complete()
+        cancelFrame()
       } else {
-        subscriber.update(position)
-        animationId = requestAnimationFrame(update)
+        update(progress)
       }
-    }
-
-    update()
-
-    return () => cancelAnimationFrame(animationId)
+    })
   })
-
-export { spring }
+)
