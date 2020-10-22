@@ -1,11 +1,17 @@
 import { observable } from '../observable'
 
 describe('observable', () => {
-  it('should update', () => {
+  it('update', () => {
     observable<number>(({ update }) => update(1)).start(v => expect(v).toBe(1))
   })
 
-  it('should complete', () => {
+  it('complete', () => {
     observable<number>(({ complete }) => complete()).start({ complete: () => expect(1).toBe(1) })
+  })
+
+  it('error', () => {
+    observable<number>(({ error }) => error('error!')).start({
+      error: e => expect(e).toBe('error!'),
+    })
   })
 })
