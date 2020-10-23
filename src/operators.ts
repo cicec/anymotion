@@ -1,5 +1,5 @@
 import { is } from './helpers'
-import { Observable, Subscriber } from './observable'
+import { Observable, Subscriber, Subscription } from './observable'
 import { UpdateObserver, Operation } from './types'
 
 export const operate = <T, R = T>(
@@ -7,12 +7,15 @@ export const operate = <T, R = T>(
 ): Operation<T, R> => (source: Observable<T>) =>
   new Observable<R>(subscriber => {
     const observer = predicate(subscriber)
+    let subscription: Subscription
 
     if (is.fun(observer)) {
-      source.start({ ...subscriber.observer, update: observer })
+      subscription = source.start({ ...subscriber.observer, update: observer })
     } else {
-      source.start({ ...subscriber.observer, ...observer })
+      subscription = source.start({ ...subscriber.observer, ...observer })
     }
+
+    return () => subscription.stop()
   })
 
 export const map = <T, R>(predicate: (value: T) => R) =>

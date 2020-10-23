@@ -37,7 +37,7 @@ export class Subscription {
     this.unsubscribe = unsubscribe
   }
 
-  stop() {
+  stop = () => {
     if (this.unsubscribe) this.unsubscribe()
   }
 }
