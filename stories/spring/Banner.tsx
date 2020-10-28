@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { spring } from '../../src'
-import { Subscription } from '../../src/observable'
+import { Subscription } from '../../src/action'
 
 const BannerItem = ({ name, background }) => (
   <div key={name} className="banner-item" style={{ background }}>

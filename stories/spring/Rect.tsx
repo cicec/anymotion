@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { spring } from '../../src'
-import { Subscription } from '../../src/observable'
+import { Subscription } from '../../src/action'
 
 export const Rect = ({ ...config }) => {
   const [open, toggle] = useState(false)

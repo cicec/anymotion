@@ -1,5 +1,5 @@
 import { is } from './helpers'
-import { Observable } from './observable'
+import { Action } from './action'
 import { map } from './operators'
 import { color } from './color'
 import { Record, Motion, MotionOptions } from './types'
@@ -49,8 +49,5 @@ const getMapper = (from: any, to: any): ((progress: number) => any) => {
   throw new Error('Incorrect type: ' + from + ' & ' + to)
 }
 
-export const factory = (motion: Motion) => <T>({
-  from,
-  to,
-  config,
-}: MotionOptions<T>): Observable<T> => motion(config).pipe<T>(map<number, T>(getMapper(from, to)))
+export const factory = (motion: Motion) => <T>({ from, to, config }: MotionOptions<T>): Action<T> =>
+  motion(config).pipe<T>(map<number, T>(getMapper(from, to)))

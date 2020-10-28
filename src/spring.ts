@@ -1,12 +1,12 @@
 import { factory } from './factory'
 import { frame } from './frame'
-import { observable } from './observable'
+import { action } from './action'
 import { SpringConfig } from './types'
 
 const defaultConfig = { tension: 170, friction: 26, mass: 1, precision: 0.01 }
 
 export const spring = factory((config?: SpringConfig) =>
-  observable<number>(({ update, complete }) => {
+  action<number>(({ update, complete }) => {
     const { tension, friction, mass, precision } = { ...defaultConfig, ...config }
 
     let velocity = 0

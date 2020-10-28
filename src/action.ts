@@ -42,7 +42,7 @@ export class Subscription {
   }
 }
 
-export class Observable<T> {
+export class Action<T> {
   private subscribe: Subscribe<T>
 
   constructor(subscribe: Subscribe<T> = () => {}) {
@@ -58,9 +58,9 @@ export class Observable<T> {
     return new Subscription({ unsubscribe })
   }
 
-  pipe<R = T>(...operations: Operation<any, any>[]): Observable<R> {
-    return operations.reduce<Observable<any>>((prev, operation) => operation(prev), this)
+  pipe<R = T>(...operations: Operation<any, any>[]): Action<R> {
+    return operations.reduce<Action<any>>((prev, operation) => operation(prev), this)
   }
 }
 
-export const observable = <T>(subscribe?: Subscribe<T>) => new Observable(subscribe)
+export const action = <T>(subscribe?: Subscribe<T>) => new Action(subscribe)

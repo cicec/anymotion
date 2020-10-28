@@ -1,4 +1,4 @@
-import { Observable, Subscriber } from './observable'
+import { Action, Subscriber } from './action'
 
 export type Record<K extends string | number | symbol = string, V = any> = { [key in K]: V }
 
@@ -10,7 +10,7 @@ export type PartialObserver<T> = {
 export type UpdateObserver<T> = PartialObserver<T> & { update: (value: T) => void }
 export type Unsubscribe = (() => void) | void
 export type Subscribe<T> = (subscriber: Subscriber<T>) => Unsubscribe | void
-export type Operation<T, R> = (source: Observable<T>) => Observable<R>
+export type Operation<T, R> = (source: Action<T>) => Action<R>
 
 export type SpringConfig = {
   tension?: number
@@ -19,5 +19,5 @@ export type SpringConfig = {
   precision?: number
 }
 export type MotionConfig = SpringConfig
-export type Motion = (config?: MotionConfig) => Observable<number>
+export type Motion = (config?: MotionConfig) => Action<number>
 export type MotionOptions<T> = { to?: T; from?: T; config?: MotionConfig }

@@ -1,11 +1,11 @@
 import { is } from './helpers'
-import { Observable, Subscriber, Subscription } from './observable'
+import { action, Action, Subscriber, Subscription } from './action'
 import { UpdateObserver, Operation } from './types'
 
 export const operate = <T, R = T>(
   predicate: (subscriber: Subscriber<R>) => UpdateObserver<T> | ((value: T) => void)
-): Operation<T, R> => (source: Observable<T>) =>
-  new Observable<R>(subscriber => {
+): Operation<T, R> => (source: Action<T>) =>
+  action<R>(subscriber => {
     const observer = predicate(subscriber)
     let subscription: Subscription
 
