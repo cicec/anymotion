@@ -1,53 +1,70 @@
-import { is } from './helpers'
 import { Action } from './action'
-import { map } from './operators'
 import { color } from './color'
+import { is } from './helpers'
+import { map } from './operators'
 import { Record, Motion, MotionOptions } from './types'
 
-const mapArrs = <T>(arr1: T[], arr2: T[]) => (operate: (v1: T, v2: T, index: number) => T) =>
-  Array(Math.min(arr1.length, arr2.length))
-    .fill(0)
-    .map((_, i) => operate(arr1[i], arr2[i], i))
+type Mapper<T> = (progress: number) => T
 
-const mapObjs = <T extends Record = Record, V = T[keyof T]>(obj1: T, obj2: T) => (
-  operate: (v1: V, v2: V) => V
+const reduceArrays = <T>(arr1: T[], arr2: T[]) => (
+  predicate: (v1: T, v2: T, index: number) => T
 ) => {
-  const keys = Object.keys(obj1).filter(key => Object.keys(obj2).includes(key))
-  const ret: Record<string, V> = {}
+  return Array(Math.min(arr1.length, arr2.length))
+    .fill(0)
+    .map((_, i) => predicate(arr1[i], arr2[i], i))
+}
+
+const reduceObjects = <T extends Record, V = T[keyof T]>(o1: T, o2: T) => (
+  predicate: (v1: V, v2: V) => V
+) => {
+  const keys = Object.keys(o1).filter(key => Object.keys(o2).includes(key))
+  const ret: Record = {}
 
   keys.forEach((_, i) => {
     const key = keys[i]
-    ret[key] = operate(obj1[key], obj2[key])
+    ret[key] = predicate(o1[key], o2[key])
   })
 
   return ret as T
 }
 
+const mapColor = (from: string, to: string): Mapper<string> => {
+  const fromColor = color.parse(from)
+  const toColor = color.parse(to)
+  const range = reduceObjects(fromColor, toColor)((v1, v2) => v2 - v1)
+
+  return progress =>
+    color.stringify(reduceObjects(fromColor, range)((v1, v2) => v1 + v2 * progress))
+}
+
+const mapNumber = (from: number, to: number): Mapper<number> => {
+  return progress => from + (to - from) * progress
+}
+
+const mapArray = <T>(from: T[], to: T[]): Mapper<T[]> => {
+  return progress => reduceArrays(from, to)((v1, v2) => getMapper(v1, v2)(progress))
+}
+
+const mapObject = <T extends Record>(from: T, to: T): Mapper<T> => {
+  return progress => reduceObjects(from, to)((v1, v2) => getMapper(v1, v2)(progress))
+}
+
 const getMapper = (from: any, to: any): ((progress: number) => any) => {
-  if (is.num(from) && is.num(to)) {
-    return progress => from + (to - from) * progress
-  }
-
   if (is.str(from) && is.str(to)) {
-    if (color.test(from) && color.test(to)) {
-      const fromColor = color.parse(from)
-      const toColor = color.parse(to)
-      const range = mapObjs(fromColor, toColor)((v1, v2) => v2 - v1)
-
-      return progress => color.stringify(mapObjs(fromColor, range)((v1, v2) => v1 + v2 * progress))
-    }
+    if (color.test(from) && color.test(to)) return mapColor(from, to)
   }
 
-  if (is.arr(from) && is.arr(to)) {
-    return progress => mapArrs(from, to)((v1, v2) => getMapper(v1, v2)(progress))
-  }
-
-  if (is.obj(from) && is.obj(to)) {
-    return progress => mapObjs(from, to)((v1, v2) => getMapper(v1, v2)(progress))
-  }
+  if (is.num(from) && is.num(to)) return mapNumber(from, to)
+  if (is.arr(from) && is.arr(to)) return mapArray(from, to)
+  if (is.obj(from) && is.obj(to)) return mapObject(from, to)
 
   throw new Error('Incorrect type: ' + from + ' & ' + to)
 }
 
-export const factory = (motion: Motion) => <T>({ from, to, config }: MotionOptions<T>): Action<T> =>
-  motion(config).pipe<T>(map<number, T>(getMapper(from, to)))
+export const factory = (motion: Motion) => <T>({
+  from,
+  to,
+  config,
+}: MotionOptions<T>): Action<T> => {
+  return motion(config).pipe<T>(map(getMapper(from, to)))
+}
