@@ -1,8 +1,8 @@
-import { Action } from './action'
 import { color } from './color'
-import { is } from './helpers'
-import { map } from './operators'
-import { Record, Motion, MotionOptions } from './types'
+import { map } from '../operators/map'
+import { is } from '../helpers'
+import { Action } from '../action'
+import { Record, Motion, MotionOptions } from '../types'
 
 type Mapper<T> = (progress: number) => T
 

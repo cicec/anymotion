@@ -1,7 +1,7 @@
-import { factory } from './factory'
-import { frame } from './frame'
-import { action } from './action'
-import { SpringConfig } from './types'
+import { factory } from '../factory'
+import { frame } from '../frame'
+import { action } from '../action'
+import { SpringConfig } from '../types'
 
 const defaultConfig = { tension: 170, friction: 26, mass: 1, precision: 0.01 }
 

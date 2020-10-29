@@ -1,1 +1,1 @@
-export { spring } from './spring'
+export { spring } from './motions/spring'
