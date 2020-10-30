@@ -1,4 +1,4 @@
-import { Action, Subscriber } from './action'
+import { Action, Subscriber, Subscription } from './action'
 
 export type Record<K extends string | number | symbol = string, V = any> = { [key in K]: V }
 
@@ -21,3 +21,5 @@ export type SpringConfig = {
 export type MotionConfig = SpringConfig
 export type Motion = (config?: MotionConfig) => Action<number>
 export type MotionOptions<T> = { to?: T; from?: T; config?: MotionConfig }
+
+export { Action, Subscriber, Subscription }

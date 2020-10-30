@@ -1,11 +1,10 @@
-import { factory } from '../factory'
 import { frame } from '../frame'
 import { action } from '../action'
 import { SpringConfig } from '../types'
 
 const defaultConfig = { tension: 170, friction: 26, mass: 1, precision: 0.01 }
 
-export const spring = factory((config?: SpringConfig) =>
+export const spring = (config: SpringConfig) =>
   action<number>(({ update, complete }) => {
     const { tension, friction, mass, precision } = { ...defaultConfig, ...config }
 
@@ -32,4 +31,3 @@ export const spring = factory((config?: SpringConfig) =>
       }
     })
   })
-)
