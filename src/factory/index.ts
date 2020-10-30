@@ -1,4 +1,5 @@
 import { color } from './color'
+import { complex } from './complex'
 import { map } from '../operators/map'
 import { is } from '../helpers'
 import { Action } from '../action'
@@ -29,12 +30,18 @@ const reduceObjects = <T extends Record, V = T[keyof T]>(o1: T, o2: T) => (
 }
 
 const mapColor = (from: string, to: string): Mapper<string> => {
-  const fromColor = color.parse(from)
-  const toColor = color.parse(to)
-  const range = reduceObjects(fromColor, toColor)((v1, v2) => v2 - v1)
+  return progress => color.stringify(mapObject(color.parse(from), color.parse(to))(progress))
+}
+
+const mapComplex = (from: string, to: string): Mapper<string> => {
+  const fromComplex = complex.parse(from)
+  const toComplex = complex.parse(to)
 
   return progress =>
-    color.stringify(reduceObjects(fromColor, range)((v1, v2) => v1 + v2 * progress))
+    complex.stringify({
+      template: toComplex.template,
+      parsed: mapObject(fromComplex.parsed, toComplex.parsed)(progress),
+    })
 }
 
 const mapNumber = (from: number, to: number): Mapper<number> => {
@@ -52,6 +59,7 @@ const mapObject = <T extends Record>(from: T, to: T): Mapper<T> => {
 const getMapper = (from: any, to: any): ((progress: number) => any) => {
   if (is.str(from) && is.str(to)) {
     if (color.test(from) && color.test(to)) return mapColor(from, to)
+    if (complex.test(from) && complex.test(to)) return mapComplex(from, to)
   }
 
   if (is.num(from) && is.num(to)) return mapNumber(from, to)

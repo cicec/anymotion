@@ -1,8 +1,8 @@
+export type RGBA = { r: number; g: number; b: number; a: number }
+
 const hexReg = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/
 const rgbReg = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/
 const hslReg = /^hsla?\((\d+),\s*([\d.]+)%,\s*([\d.]+)%(?:,\s*(\d+(?:\.\d+)?))?\)$/
-
-type RGBA = { r: number; g: number; b: number; a: number }
 
 const rgba = (r: number, g: number, b: number, a: number): RGBA => ({ r, g, b, a })
 
