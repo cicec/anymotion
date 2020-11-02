@@ -6,3 +6,13 @@ export const is = {
   num: (a: unknown): a is number => typeof a === 'number',
   und: (a: unknown): a is undefined => a === undefined,
 }
+
+export const regex = {
+  number: /(-)?(\d[\d\.]*)/g,
+  color: /(#([0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{4}|[0-9a-f]{3})|(rgb|hsl)a?\((-?[\d.]+%?[,\s]+){2,3}\s*[\d.]+%?\))/gi,
+  singleColor: /^(#([0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{4}|[0-9a-f]{3})|(rgb|hsl)a?\((-?[\d.]+%?[,\s]+){2,3}\s*[\d.]+%?\))$/i,
+}
+
+export const clamp = (min: number, max: number) => (v: number) => Math.max(min, Math.min(v, max))
+
+export const sanitize = (v: number) => (v % 1 ? Number(v.toFixed(5)) : v)

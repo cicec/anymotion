@@ -1,87 +1,95 @@
-export type RGBA = { r: number; g: number; b: number; a: number }
+import { is, regex, clamp, sanitize } from '../helpers'
+import { Record } from '../types'
 
-const hexReg = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/
-const rgbReg = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/
-const hslReg = /^hsla?\((\d+),\s*([\d.]+)%,\s*([\d.]+)%(?:,\s*(\d+(?:\.\d+)?))?\)$/
+type RGBA = { r: number; g: number; b: number; a: number }
+type HSLA = { h: number; s: number; l: number; a: number }
 
-const rgba = (r: number, g: number, b: number, a: number): RGBA => ({ r, g, b, a })
+export type Color = RGBA | HSLA
 
-const parseHex = (color: string): RGBA => {
-  color = color.replace(/#/, '')
+const isRgba = (v: Record): v is RGBA => is.num(v.a) && is.num(v.g) && is.num(v.b) && is.num(v.a)
 
-  if (color.length === 3) color = `${color.replace(/(.)/g, '$1$1')}ff`
-  if (color.length === 4) color = `${color.replace(/(.)/g, '$1$1')}`
-  if (color.length === 6) color = `${color}ff`
-
-  const hexToInt = (str: string) => parseInt(str, 0x10)
-
-  return rgba(
-    hexToInt(color[0] + color[1]),
-    hexToInt(color[2] + color[3]),
-    hexToInt(color[4] + color[5]),
-    hexToInt(color[6] + color[7]) / 255
-  )
+const testColorText = (text: string, type: '#' | 'hsl' | 'rgb') => {
+  return regex.singleColor.test(text) && text.startsWith(type)
 }
 
-const parseRgb = (color: string): RGBA => {
-  let match = rgbReg.exec(color)
+const parseColorText = (text: string) => {
+  return text
+    .replace(/(rgb|hsl)a?\(|\)/gi, '')
+    .split(/,\s*/)
+    .map(i => parseFloat(i))
+}
 
-  if (match) {
-    return rgba(
-      parseInt(match[1]),
-      parseInt(match[2]),
-      parseInt(match[3]),
-      match[4] ? parseFloat(match[4]) : 1
+const hex = {
+  test: (text: string) => testColorText(text, '#'),
+  parse: (text: string): RGBA => {
+    text = text.replace(/#/, '')
+
+    if (text.length === 3) text = `${text.replace(/(.)/g, '$1$1')}ff`
+    if (text.length === 4) text = `${text.replace(/(.)/g, '$1$1')}`
+    if (text.length === 6) text = `${text}ff`
+
+    const hexToInt = (hex: string) => parseInt(hex, 0x10)
+
+    return rgb.create(
+      hexToInt(text.substr(0, 2)),
+      hexToInt(text.substr(2, 2)),
+      hexToInt(text.substr(4, 2)),
+      hexToInt(text.substr(6, 2)) / 255
     )
-  } else {
-    throw new Error('Incorrect color format')
-  }
+  },
 }
 
-const parseHsl = (color: string): RGBA => {
-  let match = hslReg.exec(color)
+const rgb = {
+  create: (r: number, g: number, b: number, a: number): RGBA => ({ r, g, b, a }),
+  template: ({ r, g, b, a }: RGBA) => `rgba(${r}, ${g}, ${b}, ${a})`,
+  test: (text: string) => testColorText(text, 'rgb'),
+  parse: (text: string) => {
+    const [r, g, b, a = 1] = parseColorText(text)
 
-  if (match) {
-    const h = parseInt(match[1]) / 360
-    const s = parseFloat(match[2]) / 100
-    const l = parseFloat(match[3]) / 100
-    const a = match[4] ? parseFloat(match[4]) : 1
+    return rgb.create(r, g, b, a)
+  },
+  stringify: ({ r, g, b, a }: RGBA) => {
+    const transformRgb = (v: number) => Math.round(clamp(0, 255)(v))
 
-    let r: number, g: number, b: number
+    return rgb.template({
+      r: transformRgb(r),
+      g: transformRgb(g),
+      b: transformRgb(b),
+      a: sanitize(clamp(0, 1)(a)),
+    })
+  },
+}
 
-    if (s === 0) {
-      r = g = b = l
-    }
+const hsl = {
+  create: (h: number, s: number, l: number, a: number): HSLA => ({ h, s, l, a }),
+  template: ({ h, s, l, a }: HSLA) => `hsla(${h}, ${s}%, ${l}%, ${a})`,
+  test: (text: string) => testColorText(text, 'hsl'),
+  parse: (text: string): HSLA => {
+    const [h, s, l, a = 1] = parseColorText(text)
 
-    const hue2rgb = (p: number, q: number, t: number) => {
-      if (t < 0) t += 1
-      if (t > 1) t -= 1
-      if (t < 1 / 6) return p + (q - p) * 6 * t
-      if (t < 1 / 2) return q
-      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6
-      return p
-    }
-
-    const q = l < 0.5 ? l * (1 + s) : l + s - l * s
-    const p = 2 * l - q
-    r = Math.round(hue2rgb(p, q, h + 1 / 3) * 255)
-    g = Math.round(hue2rgb(p, q, h) * 255)
-    b = Math.round(hue2rgb(p, q, h - 1 / 3) * 255)
-
-    return rgba(r, g, b, a)
-  } else {
-    throw new Error('Incorrect color format')
-  }
+    return hsl.create(h, s, l, a)
+  },
+  stringify: ({ h, s, l, a }: HSLA) => {
+    return hsl.template({
+      h: Math.round(h),
+      s: sanitize(clamp(0, 100)(s)),
+      l: sanitize(clamp(0, 100)(l)),
+      a: sanitize(clamp(0, 1)(a)),
+    })
+  },
 }
 
 export const color = {
-  test: (color: string) => hexReg.test(color) || rgbReg.test(color) || hslReg.test(color),
-  parse: (color: string): RGBA => {
-    if (hexReg.test(color)) return parseHex(color)
-    if (rgbReg.test(color)) return parseRgb(color)
-    if (hslReg.test(color)) return parseHsl(color)
+  test: (text: string) => regex.singleColor.test(text),
+  parse: (text: string): Color => {
+    if (hex.test(text)) return hex.parse(text)
+    if (rgb.test(text)) return rgb.parse(text)
+    if (hsl.test(text)) return hsl.parse(text)
 
     throw new Error('Incorrect color format')
   },
-  stringify: ({ r, g, b, a }: RGBA) => `rgba(${r}, ${g}, ${b}, ${a})`,
+  stringify: (color: Color): string => {
+    if (isRgba(color)) return rgb.stringify(color)
+    return hsl.stringify(color)
+  },
 }
