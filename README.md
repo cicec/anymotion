@@ -5,7 +5,7 @@
 ## 📦 安装
 
 ```sh
-$ npm install -g anymotion
+$ npm install anymotion
 ```
 
 ## 🎯 使用
