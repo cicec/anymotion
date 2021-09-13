@@ -1,4 +1,5 @@
 dist/
+storybook-static/
 coverage/
 node_modules/
 .vscode/
