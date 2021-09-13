@@ -5,10 +5,9 @@ import { Subscription } from '../../src/action'
 export const Rect = ({ ...config }) => {
   const [open, toggle] = useState(false)
   const [styles, set] = useState({
-    translate: 0,
-    scale: 1,
-    rotate: 0,
-    borderRadius: 50,
+    transform: 'translateY(0%) scale(1) rotate(0deg)',
+    borderRadius: '50%',
+    backgroundColor: '#00d1b2',
   })
 
   const rect = useRef<HTMLDivElement>()
@@ -22,25 +21,26 @@ export const Rect = ({ ...config }) => {
   useEffect(() => {
     const from = styles
     const to = open
-      ? { translate: -20, scale: 1.2, rotate: 180, borderRadius: 10 }
-      : { translate: 0, scale: 1, rotate: 0, borderRadius: 50 }
+      ? {
+          transform: 'translateY(-20%) scale(1.2) rotate(180deg)',
+          borderRadius: '10%',
+          backgroundColor: '#ffdd57',
+        }
+      : {
+          transform: 'translateY(0%) scale(1) rotate(0deg)',
+          borderRadius: '50%',
+          backgroundColor: '#00d1b2',
+        }
 
     subscription.current?.stop()
     subscription.current = spring({ from, to, config }).start(value => set(value))
   }, [open])
 
-  const { translate, scale, rotate, borderRadius } = styles
+  const { transform, borderRadius, backgroundColor } = styles
 
   return (
     <div className="rect-container p-6">
-      <div
-        ref={rect}
-        className="rect has-background-primary"
-        style={{
-          transform: `translateY(${translate}%) scale(${scale}) rotate(${rotate}deg)`,
-          borderRadius: `${borderRadius}%`,
-        }}
-      ></div>
+      <div ref={rect} className="rect" style={{ transform, borderRadius, backgroundColor }}></div>
     </div>
   )
 }
