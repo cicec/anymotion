@@ -84,8 +84,7 @@ spring({ from: 0, to: 100 }).start({
 与 `RxJS` 相似，你可以在 `pipe` 中去操作响应的值，经过处理后的值最终会输出到 `update` 监听函数中：
 
 ```js
-import { filter } from 'anymotion/operators/filter'
-import { map } from 'anymotion/operators/map'
+import { filter, map } from 'anymotion/operators'
 
 spring({ from: 0, to: 100 })
   .pipe(
